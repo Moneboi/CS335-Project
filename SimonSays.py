@@ -30,11 +30,14 @@ class StartMenu(QMainWindow):
         self.button_IceCream.clicked.connect(lambda: self.start_Simon())
 
         # creates title
-        self.title = QLabel("Welcome to the Game Menu")
+        self.title = QLabel("Game Menu")
+        font = self.title.font()  # get the current font
+        font.setPointSize(24) # change font
+        self.title.setFont(font)  # set the new font
         self.title.setAlignment(Qt.AlignmentFlag.AlignCenter) # center title within layout
 
         self.layout = QGridLayout()
-        self.layout.setSpacing(20)
+        self.layout.setSpacing(40)
         self.layout.setAlignment(Qt.AlignmentFlag.AlignCenter) # center layout
         self.layout.addWidget(self.title, 0, 1)  # add title to the grid layout
         self.layout.addWidget(self.button_Simon, 1, 0)
@@ -89,6 +92,7 @@ class Simon_Says(QMainWindow):
         self.button_green = QPushButton("Green")
         self.button_yellow = QPushButton("Yellow")
         self.button_start = QPushButton("Start Game")
+        self.button_exit = QPushButton("Exit Game")
 
         # sets size of button
         self.button_red.setFixedSize(100, 100)
@@ -96,6 +100,7 @@ class Simon_Says(QMainWindow):
         self.button_green.setFixedSize(100, 100)
         self.button_yellow.setFixedSize(100, 100) 
         self.button_start.setFixedSize(100, 100) 
+        self.button_exit.setFixedSize(100, 100)
 
         # sets color of button
         self.button_red.setStyleSheet('background-color: red')
@@ -103,6 +108,7 @@ class Simon_Says(QMainWindow):
         self.button_green.setStyleSheet('background-color: green')
         self.button_yellow.setStyleSheet('background-color: yellow')
         self.button_start.setStyleSheet('background-color: black; color: white')
+        self.button_exit.setStyleSheet('background-color: black; color: white')
 
         # assigns function to button click action (use of lambda because ...)
         self.button_red.clicked.connect(lambda: self.makeGuess('Red'))
@@ -110,6 +116,7 @@ class Simon_Says(QMainWindow):
         self.button_green.clicked.connect(lambda: self.makeGuess('Green'))
         self.button_yellow.clicked.connect(lambda: self.makeGuess('Yellow'))
         self.button_start.clicked.connect(self.StartGame) # when clicked, creates loop until true becomes false
+        self.button_exit.clicked.connect(lambda: self.exitGame())
 
         # uses Qt to format button layout
         self.layout = QGridLayout()
@@ -119,6 +126,7 @@ class Simon_Says(QMainWindow):
         self.layout.addWidget(self.button_green, 1, 0)
         self.layout.addWidget(self.button_yellow, 1, 1)
         self.layout.addWidget(self.button_start, 2, 0)
+        self.layout.addWidget(self.button_exit, 2, 1)
 
         self.widget = QWidget()
         self.widget.setLayout(self.layout) # apply button layout to widget
@@ -165,6 +173,16 @@ class Simon_Says(QMainWindow):
 
        print("-------------------------") # your turn (input + output)
        print("~You~")
+
+    def exitGame(self):
+
+        # Create window for matching game.
+        self.game_window = StartMenu()
+        self.game_window.show()
+
+        # Close the current window.
+        self.close()
+
 
 # Inital window for difficulty selection.
 class DifficultySelection(QWidget):
