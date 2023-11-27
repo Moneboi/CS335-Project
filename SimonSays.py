@@ -3,7 +3,8 @@
 # 'Simon Says' Game
 
 from PyQt6.QtWidgets import QApplication, QWidget, QMainWindow, QPushButton, QGridLayout, QLabel, QComboBox # 4 different layouts, ...
-from PyQt6.QtCore import Qt
+from PyQt6.QtCore import Qt, QTimer, QEventLoop
+import time
 import sys # For access to command line arguments
 import random # for random color selector
 import numpy as np # Alternative: import Array as arr
@@ -107,8 +108,8 @@ class Simon_Says(QMainWindow):
         self.button_blue.setStyleSheet('background-color: blue')
         self.button_green.setStyleSheet('background-color: green')
         self.button_yellow.setStyleSheet('background-color: yellow')
-        self.button_start.setStyleSheet('background-color: black; color: white')
-        self.button_exit.setStyleSheet('background-color: black; color: white')
+        #self.button_start.setStyleSheet('background-color: black; color: white')
+        #self.button_exit.setStyleSheet('background-color: black; color: white')
 
         # assigns function to button click action (use of lambda because ...)
         self.button_red.clicked.connect(lambda: self.makeGuess('Red'))
@@ -158,8 +159,33 @@ class Simon_Says(QMainWindow):
 
     # Task: in GUI make it highlight the button repeated for 1 second then revert it back to normal color and go on to the next
     def Repeat(self): # prints color sequence
-        for i in range(self.Array.size):
-            print(f'Simon Says: {self.Array[i]}') # make it highlight button repeated for 1 second then revert back to normal color
+
+        self.i = 0
+        while self.i < len(self.Array):
+
+            print(f'Simon Says: {self.Array[self.i]}') # make it highlight button repeated for 1 second then revert back to normal color
+
+            if self.Array[self.i] == 'Red':
+                self.button_red.setStyleSheet("background-color: white")
+                QTimer.singleShot(1500, lambda: self.button_red.setStyleSheet("background-color: red"))
+
+            elif self.Array[self.i] == 'Blue':
+                self.button_blue.setStyleSheet("background-color: white")
+                QTimer.singleShot(1500, lambda: self.button_blue.setStyleSheet("background-color: blue"))
+
+            elif self.Array[self.i] == 'Green':
+                self.button_green.setStyleSheet("background-color: white")
+                QTimer.singleShot(1500, lambda: self.button_green.setStyleSheet("background-color: green"))
+
+            if self.Array[self.i] == 'Yellow':
+                self.button_yellow.setStyleSheet("background-color: white")
+                QTimer.singleShot(1500, lambda: self.button_yellow.setStyleSheet("background-color: yellow"))
+
+            self.i += 1
+
+            loop = QEventLoop()
+            QTimer.singleShot(2000, loop.quit) 
+            loop.exec()
 
 
     def StartGame(self): # starts turn, each turn a new color is added to sequence making game more challenging
