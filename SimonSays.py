@@ -2,19 +2,83 @@
 # Project for CS335
 # 'Simon Says' Game
 
-from PyQt6.QtWidgets import QApplication, QWidget, QMainWindow, QPushButton, QGridLayout # 4 different layouts, ...
-# from PyQt6.QtGui import # ...
-# from PyQt6.QtCore import # QSize, Qt, ...
+from PyQt6.QtWidgets import QApplication, QWidget, QMainWindow, QPushButton, QGridLayout, QLabel, QComboBox # 4 different layouts, ...
+from PyQt6.QtCore import Qt
 import sys # For access to command line arguments
 import random # for random color selector
 import numpy as np # Alternative: import Array as arr
 
-class MyWindow(QMainWindow):
+class StartMenu(QMainWindow):
+    def __init__(self):
+        super().__init__()
+
+        self.setWindowTitle("Game Menu")
+
+        # creates button
+        self.button_Simon = QPushButton("Simon Says")
+        self.button_Matcher = QPushButton("Color Matcher")
+        self.button_IceCream = QPushButton("Ice Cream Shop")
+    
+        # sets size of button
+        self.button_Simon.setFixedSize(300, 100)
+        self.button_Matcher.setFixedSize(300, 100)
+        self.button_IceCream.setFixedSize(300, 100)
+
+        # assigns function to button click action (use of lambda because ...)
+        self.button_Simon.clicked.connect(lambda: self.start_Simon())
+        self.button_Matcher.clicked.connect(lambda: self.start_Matcher())
+        self.button_IceCream.clicked.connect(lambda: self.start_Simon())
+
+        # creates title
+        self.title = QLabel("Welcome to the Game Menu")
+        self.title.setAlignment(Qt.AlignmentFlag.AlignCenter) # center title within layout
+
+        self.layout = QGridLayout()
+        self.layout.setSpacing(20)
+        self.layout.setAlignment(Qt.AlignmentFlag.AlignCenter) # center layout
+        self.layout.addWidget(self.title, 0, 1)  # add title to the grid layout
+        self.layout.addWidget(self.button_Simon, 1, 0)
+        self.layout.addWidget(self.button_Matcher, 1 , 1)
+        self.layout.addWidget(self.button_IceCream, 1, 2)
+
+        self.widget = QWidget()
+        self.widget.setLayout(self.layout) # apply button layout to widget
+        self.setCentralWidget(self.widget) # center of screen
+
+
+    def start_Simon(self):
+
+        # Create window for matching game.
+        self.game_window = Simon_Says()
+        self.game_window.show()
+
+        # Close the current window.
+        self.close()
+
+    def start_Matcher(self):
+
+        # Create window for matching game.
+        self.game_window = DifficultySelection()
+        self.game_window.show()
+
+        # Close the current window.
+        self.close()
+
+    def start_IceCream(self):
+
+        # Create window for matching game.
+        self.game_window = Simon_Says()
+        self.game_window.show()
+
+        # Close the current window.
+        self.self.close()
+
+class Simon_Says(QMainWindow):
 
     def __init__(self):
         super().__init__()
         
-        self.setWindowTitle("Project 335")
+        self.setWindowTitle("Simon Says")
 
         self.Array = np.array([]) # stores sequence of colors, appends new color every turn
         self.click_count = 0 # tracks number of moves left during turn and iterates through color sequence
@@ -102,6 +166,212 @@ class MyWindow(QMainWindow):
        print("-------------------------") # your turn (input + output)
        print("~You~")
 
+# Inital window for difficulty selection.
+class DifficultySelection(QWidget):
+    def __init__(self):
+        super().__init__()
+
+        # Set the window title.
+        self.setWindowTitle("Difficulty Selection")
+
+        # Set the grid layout.
+        self.layout = QGridLayout()
+
+        # Create difficulty selection box.
+        self.difficulty_label = QLabel("Select Difficulty:")
+        self.layout.addWidget(self.difficulty_label, 0, 0, 1, 2)
+
+        # Create options for difficulty.
+        self.difficulty_combo = QComboBox()
+        self.difficulty_combo.addItems(["Easy", "Medium", "Hard"])
+        self.layout.addWidget(self.difficulty_combo, 1, 0, 1, 2)
+
+        # Create start game button.
+        start_game_button = QPushButton("Start Game")
+        start_game_button.clicked.connect(self.start_game)
+        self.layout.addWidget(start_game_button, 2, 0, 1, 2)
+
+        # Set layout.
+        self.setLayout(self.layout)
+
+    # Definition to open game window.
+    def start_game(self):
+        # Get selected difficulty.
+        selected_difficulty = self.difficulty_combo.currentText()
+
+        # Create window for matching game.
+        game_window = MatchingGame(selected_difficulty)
+        game_window.show()
+
+        # Close the current window.
+        self.close()
+
+# Class for the matching game.
+class MatchingGame(QWidget):
+    def __init__(self, difficulty):
+        super().__init__()
+
+        # Matching Game title for window.
+        self.setWindowTitle("Matching Game")
+
+        # Initialize lists and size of the game.
+        self.color_pairs = []
+        self.selected_colors = []
+        self.button_size = 50
+        self.guess_count = 0
+
+        # Default game difficulty.
+        self.difficulty = difficulty
+
+        # Set grid size.
+        match self.difficulty:
+            case "Easy":
+                self.grid_size = 2
+            case "Hard":
+                self.grid_size = 6
+            case _:
+                self.grid_size = 4
+
+        # Potential colors for the matching game.
+        self.potential_colors = ['red', 'blue', 'green', 'yellow', 'lime', 'orange', 'cyan', 'magenta', 'khaki', 'silver', 'pink', 'beige', 'olive', 'chocolate', 'salmon', 'brown', 'indigo', 'black']
+        self.colors = []
+
+        # Choose colors for the grid size.
+        for i in range(int((self.grid_size * self.grid_size) / 2)):
+            self.colors.append(self.potential_colors[i])
+
+        # Lists for buttons.
+        self.buttons = []
+        self.selected_buttons = []
+
+        # Run setup UI.
+        self.setup_ui()
+
+    # Setup UI function.
+    def setup_ui(self):
+        # Layout for the game.
+        layout = QGridLayout()
+
+        # Create buttons and connect them to the slot.
+        for i in range(self.grid_size):
+            for j in range(self.grid_size):
+                button = QPushButton()
+                button.setFixedSize(self.button_size, self.button_size)
+                layout.addWidget(button, i + 1, j)
+                button.clicked.connect(lambda _, row=i, col=j: self.button_clicked(row, col))
+                self.buttons.append(button)
+
+        # Create a new game button.
+        self.reset_button = QPushButton("Start New Game")
+        self.reset_button.clicked.connect(self.new_game)
+        layout.addWidget(self.reset_button, self.grid_size + 1, 0, 1, self.grid_size)
+
+        # Create a change difficulty button.
+        difficulty_button = QPushButton("Change Difficulty")
+        difficulty_button.clicked.connect(self.change_difficulty)
+        layout.addWidget(difficulty_button, self.grid_size + 2, 0, 1, self.grid_size)
+
+        # Create a label for the guess count.
+        self.guess_count_label = QLabel()
+        layout.addWidget(self.guess_count_label, self.grid_size + 3, 0, 1, self.grid_size)
+        self.guess_count_label.setText(f"Guesses: {self.guess_count}")
+
+
+        # Create a new game.
+        self.new_game()
+
+        # Set the layout.
+        self.setLayout(layout)
+
+    # For a new game setup.
+    def new_game(self):
+        # Generate pairs of colors.
+        self.color_pairs = self.colors * 2
+        random.shuffle(self.color_pairs)
+
+        # Reset the guess count.
+        self.guess_count = 0
+        self.guess_count_label.setText(f"Guesses: {self.guess_count}")
+
+        # Reset the new game button.
+        self.reset_button.setText(f"Start New Game")
+
+        # Assign colors to buttons.
+        for button, color in zip(self.buttons, self.color_pairs):
+            button.setStyleSheet(f'background-color: {color};')
+            # Comment the below line to see colors.
+            button.setStyleSheet(f'')
+            button.setDisabled(False)
+
+        # Reset the selected buttons and number of pairs matched.
+        self.selected_buttons = []
+        self.matched_pairs = 0
+
+    # To change the difficulty.
+    def change_difficulty(self):
+
+        # Reopen the difficulty selection window.
+        self.difficulty_window = DifficultySelection()
+        self.difficulty_window.show()
+
+        self.close() # Close the current game window
+
+    # Button click.
+    def button_clicked(self, row, col):
+        # Reset the colors if two non-matches were selected.
+        if len(self.selected_buttons) == 2:
+            for button in self.selected_buttons:
+                    button.setStyleSheet('')
+                    self.selected_buttons = []
+                    self.selected_colors = []
+
+        # Get the button at the coordinate.
+        button = self.buttons[row * self.grid_size + col]
+
+        # Do not allow a currently selected button to be selected again.
+        if button in self.selected_buttons:
+            return
+
+        # Reveal the color of the selected button.
+        button.setStyleSheet(f'background-color: {self.color_pairs[row * self.grid_size + col]};')
+
+        # Append to the selected colors list for matching.
+        self.selected_colors.append(self.color_pairs[row * self.grid_size + col])
+
+        # Show the color of the button.
+        button.setStyleSheet(button.styleSheet() + 'border: 2px solid white;')
+        self.selected_buttons.append(button)
+
+        # Check for a match when two buttons are selected.
+        if len(self.selected_buttons) == 2:
+            # Increment the guess counter.
+            self.guess_count += 1
+
+            # Update the guess count label.
+            self.guess_count_label.setText(f"Guesses: {self.guess_count}")
+
+            # Check for a match.
+            self.check_for_match()
+
+    # Check for a match.
+    def check_for_match(self):
+        # Check if the color of buttons match.
+        if self.selected_colors[0] == self.selected_colors[1]:
+            # Match found.
+            for button in self.selected_buttons:
+                button.setDisabled(True)
+            # Increase the number of pairs matched.
+            self.matched_pairs += 1
+
+            # Reset selected buttons and colors list.
+            self.selected_buttons = []
+            self.selected_colors = []
+
+            # Check if all pairs are matched.
+            if self.matched_pairs == len(self.colors):
+                # Display winning text.
+                print("Congratulations! You've matched all pairs. Start a new game?")
+                self.reset_button.setText(f"Play Again")
            
 # Start Game, Add 1 button to array, repeat array in order, user makes guesses, if all right signal and repeat, if wrong along way then end game
 
@@ -109,6 +379,6 @@ class MyWindow(QMainWindow):
 app = QApplication(sys.argv) # Python list containing the command line arguments passed to the application
 # app = QApplication([]) # for no command line arguments
 
-window = MyWindow() # Create a Qt widget, which will be our window.
+window = StartMenu() # Create a Qt widget, which will be our window.
 window.show()
 app.exec() # Start the event loop
